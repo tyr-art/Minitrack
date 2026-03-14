@@ -1,4 +1,5 @@
-const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5555").replace(/\/$/, "")
+// lib/api.ts
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555").replace(/\/$/, "")
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
@@ -6,12 +7,19 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 
   console.log("[apiFetch]", options.method || "GET", url)
 
+  const headers = new Headers(options.headers || {})
+
+  // Only set Content-Type when sending a body (avoids weird preflights sometimes)
+  const hasBody = options.body !== undefined && options.body !== null
+  if (hasBody && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json")
+  }
+
   const res = await fetch(url, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
+    // ✅ IMPORTANT: send/receive cookies always
+    credentials: options.credentials ?? "include",
   })
 
   if (!res.ok) {
@@ -20,7 +28,7 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 
     try {
       const j = text ? JSON.parse(text) : null
-      message = j?.error || j?.message || message
+      message = (j as any)?.error || (j as any)?.message || message
     } catch {
       if (text) message = text
     }

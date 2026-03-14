@@ -9,6 +9,7 @@ from routes.auth import Login, Signup, Logout, Me
 from routes.user import CreateDriver, GetDrivers, GetUsers, UpdateUser, DeleteUser, CreateAdmin
 from routes.user_role import UserRoleList, UserRoleDetail
 
+# from routes.payment import PaymentStkPush, PaymentCallback, PaymentDetail
 from routes.booking import BookingList, BookingDetail
 from routes.trip import TripToday, TripPickup, TripDropoff
 from routes.school_location import CreateSchoolLocation, GetAllSchoolLocations, GetSchoolLocation, UpdateSchoolLocation, DeleteSchoolLocation
@@ -16,7 +17,21 @@ from routes.school_location import CreateSchoolLocation, GetAllSchoolLocations, 
 from routes.vehicle import VehicleList, VehicleDetail
 from routes.route import RouteList, RouteDetail
 from routes.pickup_locations import PickupLocationList, PickupLocationDetail,PickupLocationByRoute, PickupLocationBulk
+# from routes.payment import (
+#     PaymentStkPush, PaymentCallback, PaymentDetail,
+#     BookingPayments, BookingLatestPayment
+# )
+from routes.payment import (
+    PaymentStkPush, PaymentCallback, PaymentDetail,
+    BookingPayments, BookingLatestPayment,
+    PaymentStkQuery,  # ✅ add this
+)
 
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def create_app():
 
@@ -41,12 +56,13 @@ def create_app():
     db.init_app(app)
     migrate = Migrate(app, db)
     CORS(
-        app,
-        supports_credentials=True,
-        origins=["http://localhost:3000"],
-        methods=["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization"]
-    )
+    app,
+    supports_credentials=True,
+    origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
+)
+
     api = Api(app)
 
     api.add_resource(Login, '/login')
@@ -88,6 +104,16 @@ def create_app():
     api.add_resource(PickupLocationDetail, '/pickup_locations/<int:id>')
     api.add_resource(PickupLocationByRoute, '/pickup_locations/route/<int:route_id>')
     api.add_resource(PickupLocationBulk, '/pickup_locations/bulk')
+
+    api.add_resource(PaymentStkPush, "/payments/stk-push")
+    api.add_resource(PaymentCallback, "/payments/callback")
+    api.add_resource(PaymentDetail, "/payments/<int:payment_id>")
+    # NEW:
+    api.add_resource(BookingPayments, "/bookings/<int:booking_id>/payments")
+    api.add_resource(BookingLatestPayment, "/bookings/<int:booking_id>/payments/latest")
+    api.add_resource(PaymentStkQuery, "/payments/stk-query")
+    
+
     
     return app 
 
