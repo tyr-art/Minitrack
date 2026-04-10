@@ -173,6 +173,33 @@ class Booking(db.Model):
     )
 
 
+class Payment(db.Model):
+    __tablename__ = 'payments'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False, index=True)
+
+    phone_number = db.Column(db.String(20), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+
+    merchant_request_id = db.Column(db.String(100), index=True)
+    checkout_request_id = db.Column(db.String(100), unique=True, index=True)
+
+    mpesa_receipt_number = db.Column(db.String(50))
+    transaction_date = db.Column(db.DateTime)
+
+    status = db.Column(db.String(20), nullable=False, default='PENDING')  
+    result_code = db.Column(db.String(10))
+    result_desc = db.Column(db.String(255))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    booking = db.relationship('Booking', backref=db.backref('payments', lazy=True, cascade='all, delete-orphan'))
+
+
+
 class Trip(db.Model):
     __tablename__ = 'trips'
 
