@@ -37,9 +37,12 @@ def create_app():
 
     app = Flask(__name__)
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = ("postgresql+psycopg2://roy:roy12345@localhost:5432/mini_track_db")
-    
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    import os
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")import os
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")    
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     app.secret_key = "super-secret-key"
     app.config["JWT_SECRET_KEY"] = "super-secret-key"
@@ -58,7 +61,11 @@ def create_app():
     CORS(
     app,
     supports_credentials=True,
-    origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    origins=[
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://your-vercel-app.vercel.app"
+]
     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"]
 )
@@ -119,13 +126,8 @@ def create_app():
 
 app = create_app()
 if __name__ == '__main__':
-        app.run(port=5555, debug=True)
+        port = int(os.environ.get("PORT", 5000))
+        app.run(host="0.0.0.0", port=port, debug=True)
 
 
 
-# CREATE DATABASE mini_track_db;
-# CREATE USER roy WITH PASSWORD 'roy12345';
-# GRANT ALL PRIVILEGES ON DATABASE mini_track_db TO roy;
-# GRANT ALL ON SCHEMA public TO roy;
-# ALTER SCHEMA public OWNER TO roy;
-# ALTER DATABASE mini_track_db OWNER TO roy;
