@@ -333,8 +333,6 @@ class PaymentCallback(Resource):
             # Daraja uses non-zero for cancelled/failed. We treat as FAILED.
             payment.status = "FAILED"
 
-            # ✅ In real apps: booking is not confirmed. Release immediately.
-            # If you prefer “keep pending until expiry”, comment next block.
             if booking and booking.status == "pending_payment":
                 booking.status = "cancelled"
                 Trip.query.filter(
@@ -466,17 +464,14 @@ class PaymentStkQuery(Resource):
             return {"error": "STK query failed", "status_code": res.status_code, "details": _safe_json(res) or res.text}, 502
 
         j = res.json()
-        # Daraja returns ResultCode/ResultDesc for query too
         rc = str(j.get("ResultCode")) if j.get("ResultCode") is not None else None
         rd = j.get("ResultDesc")
 
-        # If rc is None, keep pending
         if rc is not None and rc != "0":
             payment.status = "FAILED"
             payment.result_code = rc
             payment.result_desc = rd
 
-            # optional: cancel booking immediately if still pending_payment
             if booking and booking.status == "pending_payment":
                 booking.status = "cancelled"
                 Trip.query.filter(
@@ -490,9 +485,7 @@ class PaymentStkQuery(Resource):
             payment.status = "SUCCESS"
             payment.result_code = rc
             payment.result_desc = rd
-            # if booking and booking.status == "pending_payment":
-            #     booking.status = "active"
-            # db.session.commit()
+           
             if booking and booking.status == "pending_payment":
                   booking.status = "cancelled"
             try:
