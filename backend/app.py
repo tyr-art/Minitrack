@@ -36,93 +36,100 @@ load_dotenv()
 def create_app():
 
     app = Flask(__name__)
-    
-    import os
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")import os
+    # Database
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")    
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
+    # Security
     app.secret_key = "super-secret-key"
     app.config["JWT_SECRET_KEY"] = "super-secret-key"
-    
+
+    # JWT Cookies
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     app.config["JWT_ACCESS_COOKIE_NAME"] = "access_token_cookie"
     app.config["JWT_COOKIE_SECURE"] = False
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     app.config["JWT_COOKIE_SAMESITE"] = "Lax"
-    app.config["JWT_COOKIE_SECURE"] = False
-    
+
     jwt = JWTManager(app)
 
+    # DB + Migrations
     db.init_app(app)
     migrate = Migrate(app, db)
+
+    # CORS
     CORS(
-    app,
-    supports_credentials=True,
-    origins=[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://your-vercel-app.vercel.app"
-]
-    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"]
-)
+        app,
+        supports_credentials=True,
+        origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "https://your-vercel-app.vercel.app"
+        ],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"]
+    )
 
     api = Api(app)
 
+    # Auth
     api.add_resource(Login, '/login')
     api.add_resource(Signup, '/signup')
     api.add_resource(Logout, '/logout')
     api.add_resource(Me, '/me')
-    
+
+    # Users
     api.add_resource(CreateDriver, '/drivers')
     api.add_resource(GetDrivers, '/drivers')
     api.add_resource(GetUsers, '/users')
     api.add_resource(UpdateUser, '/users/<int:user_id>')
     api.add_resource(DeleteUser, '/users/<int:user_id>')
     api.add_resource(CreateAdmin, '/admins')
-    
+
+    # Roles
     api.add_resource(UserRoleList, '/user_roles')
     api.add_resource(UserRoleDetail, '/user_roles/<int:role_id>')
 
-
+    # Trips
     api.add_resource(TripToday, '/trips/today')
     api.add_resource(TripPickup, '/trips/<int:trip_id>/pickup')
     api.add_resource(TripDropoff, '/trips/<int:trip_id>/dropoff')
 
+    # Bookings
     api.add_resource(BookingList, '/bookings')
     api.add_resource(BookingDetail, '/bookings/<int:booking_id>')
-    
+
+    # School locations
     api.add_resource(CreateSchoolLocation, "/school-locations")
     api.add_resource(GetAllSchoolLocations, "/school-locations/all")
     api.add_resource(GetSchoolLocation, "/school-locations/<int:location_id>")
     api.add_resource(UpdateSchoolLocation, "/school-locations/<int:location_id>")
     api.add_resource(DeleteSchoolLocation, "/school-locations/<int:location_id>")
-    
+
+    # Vehicles
     api.add_resource(VehicleList, '/vehicles')
     api.add_resource(VehicleDetail, '/vehicles/<int:vehicle_id>')
-    
+
+    # Routes
     api.add_resource(RouteList, '/routes')
     api.add_resource(RouteDetail, '/routes/<int:route_id>')
 
+    # Pickup locations
     api.add_resource(PickupLocationList, '/pickup_locations')
     api.add_resource(PickupLocationDetail, '/pickup_locations/<int:id>')
     api.add_resource(PickupLocationByRoute, '/pickup_locations/route/<int:route_id>')
     api.add_resource(PickupLocationBulk, '/pickup_locations/bulk')
 
+    # Payments
     api.add_resource(PaymentStkPush, "/payments/stk-push")
     api.add_resource(PaymentCallback, "/payments/callback")
     api.add_resource(PaymentDetail, "/payments/<int:payment_id>")
-    # NEW:
     api.add_resource(BookingPayments, "/bookings/<int:booking_id>/payments")
     api.add_resource(BookingLatestPayment, "/bookings/<int:booking_id>/payments/latest")
     api.add_resource(PaymentStkQuery, "/payments/stk-query")
-    
 
-    
-    return app 
+    return app
 
 app = create_app()
 if __name__ == '__main__':
