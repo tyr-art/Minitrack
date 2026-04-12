@@ -65,7 +65,7 @@ def create_app():
         origins=[
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            "https://your-vercel-app.vercel.app"
+            "https://minitrack-zeta.vercel.app"
         ],
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"]
@@ -132,6 +132,9 @@ def create_app():
     return app
 
 app = create_app()
+@app.route("/")
+def home():
+    return {"message": "Minitrack API is running 🚀"}
 if __name__ == '__main__':
         port = int(os.environ.get("PORT", 5000))
         app.run(host="0.0.0.0", port=port, debug=True)
