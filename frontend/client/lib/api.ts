@@ -38,4 +38,3 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 
   return res
 }
-console.log("BASE_URL =", BASE_URL);
